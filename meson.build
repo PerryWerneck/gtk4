@@ -96,7 +96,6 @@ if host_machine.system() == 'windows'
     link_with : static_library(
 		meson.project_name(), 
 		sources,
-		pic: true,
 		c_args: [ '-DSTATIC_LIBRARY' ],
 		install: true,
 		dependencies: dependencies,
@@ -140,7 +139,7 @@ else
     install: true,
     version : libversion,
     soversion : libversion,
-    c_args: [ '-ffat-lto-objects' ],
+    c_args: [ '-ffat-lto-objects', '-fPIC' ],
     gnu_symbol_visibility: 'hidden',
 	dependencies: dependencies,
     include_directories: includes_dir
@@ -150,8 +149,7 @@ else
     link_with : static_library(
 		meson.project_name(), 
 		sources,
-		pic: true,
-		c_args: [ '-DSTATIC_LIBRARY', '-fno-lto' ],
+		c_args: [ '-DSTATIC_LIBRARY', '-fno-lto', '-fPIC' ],
 		install: true,
 		dependencies: dependencies,
 		include_directories: includes_dir
