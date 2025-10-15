@@ -34,6 +34,8 @@
  void pw_progress_set_text(PwProgress *progress, const char *text);
  void pw_progress_set_pulse(PwProgress *progress, gboolean pulse);
  void pw_progress_set_step(PwProgress *progress, unsigned int current, unsigned int total);
+ void pw_progress_set_steps(PwProgress *progress, unsigned int steps);
+ void pw_progress_next_step(PwProgress *progress);
  
  G_END_DECLS
  

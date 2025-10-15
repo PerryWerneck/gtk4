@@ -19,6 +19,8 @@ pkg_micro_version = version_array[2].to_int()
 
 libversion = '@0@.@1@'.format(pkg_major_version,pkg_minor_version)
 
+subdir('po')
+
 #
 # Compilers
 #
@@ -27,6 +29,7 @@ cc = meson.get_compiler('c')
 enable_debug = get_option('debug') or get_option('buildtype').contains('debug')
 
 compiler_flags_common = [
+    '-fPIC',
 	]
 
 if enable_debug
@@ -139,7 +142,7 @@ else
     install: true,
     version : libversion,
     soversion : libversion,
-    c_args: [ '-ffat-lto-objects', '-fPIC' ],
+    c_args: [ '-ffat-lto-objects' ],
     gnu_symbol_visibility: 'hidden',
 	dependencies: dependencies,
     include_directories: includes_dir
@@ -149,7 +152,7 @@ else
     link_with : static_library(
 		meson.project_name(), 
 		sources,
-		c_args: [ '-DSTATIC_LIBRARY', '-fno-lto', '-fPIC' ],
+		c_args: [ '-DSTATIC_LIBRARY', '-fno-lto' ],
 		install: true,
 		dependencies: dependencies,
 		include_directories: includes_dir
