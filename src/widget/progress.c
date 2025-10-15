@@ -25,6 +25,8 @@
  #include <glib/gi18n-lib.h>
 
  static void pw_progress_dispose(GObject *gobject);
+ static void pw_progress_set_property(GObject *object, guint prop_id, const GValue *value, GParamSpec *pspec);
+ static void pw_progress_get_property(GObject *object, guint prop_id, GValue *value, GParamSpec *pspec);
 
  enum {
 	PROP_TEXT = 1,
@@ -70,8 +72,8 @@
 
 	object_class->dispose = pw_progress_dispose;
 
-  	// object_class->set_property = pw_progress_set_property;
-  	// object_class->get_property = pw_progress_get_property;
+  	object_class->set_property = pw_progress_set_property;
+  	object_class->get_property = pw_progress_get_property;
 
 	obj_properties[PROP_TEXT] =
     	g_param_spec_string (
@@ -176,6 +178,7 @@
 	gtk_grid_set_row_homogeneous(GTK_GRID(self), FALSE);
 
 	self->progress_bar = GTK_PROGRESS_BAR(gtk_progress_bar_new());
+	gtk_progress_bar_set_show_text(self->progress_bar, TRUE);
 	gtk_widget_set_hexpand(GTK_WIDGET(self->progress_bar), TRUE);
 	gtk_widget_set_vexpand(GTK_WIDGET(self->progress_bar), FALSE);
 	gtk_widget_set_halign(GTK_WIDGET(self->progress_bar), GTK_ALIGN_FILL);
@@ -199,14 +202,82 @@
 
  }
 
+ static void pw_progress_set_property(GObject *object, guint prop_id, const GValue *value, GParamSpec *pspec) {
+
+	PwProgress *self = PW_PROGRESS(object);
+
+	switch(prop_id) {
+	case PROP_TEXT:
+		pw_progress_set_text(self, g_value_get_string(value));
+		break;
+
+	case PROP_LENGTH_CURRENT:
+		pw_progress_set_progress(self, g_value_get_uint(value), self->total);
+		break;
+
+	case PROP_LENGTH_TOTAL:
+		pw_progress_set_progress(self, self->current, g_value_get_uint(value));
+		break;
+
+	case PROP_STEP_CURRENT:
+		pw_progress_set_step(self, g_value_get_uint(value), self->steps);
+		break;
+
+	case PROP_STEP_TOTAL:
+		pw_progress_set_step(self, self->step, g_value_get_uint(value));
+		break;
+
+	default:
+		G_OBJECT_WARN_INVALID_PROPERTY_ID(object, prop_id, pspec);
+		break;
+
+	}
+
+ }
+
+ static void pw_progress_get_property(GObject *object, guint prop_id, GValue *value, GParamSpec *pspec) {
+
+	PwProgress *self = PW_PROGRESS(object);
+
+	switch(prop_id) {
+	case PROP_TEXT:
+		g_value_set_string(value, gtk_progress_bar_get_text(self->progress_bar));
+		break;
+
+	case PROP_LENGTH_CURRENT:
+		g_value_set_uint(value, self->current);
+		break;
+
+	case PROP_LENGTH_TOTAL:
+		g_value_set_uint(value, self->total);
+		break;
+
+	case PROP_STEP_CURRENT:
+		g_value_set_uint(value, self->step);
+		break;
+
+	case PROP_STEP_TOTAL:
+		g_value_set_uint(value, self->steps);
+		break;
+
+	default:
+		G_OBJECT_WARN_INVALID_PROPERTY_ID(object, prop_id, pspec);
+
+	}
+
+ }
+
  void pw_progress_set_progress(PwProgress *progress, uint64_t current, uint64_t total) {
 	progress->current = current;
 	progress->total = total;
 	progress->idle = 0;
+	if(!current) {
+		gtk_progress_bar_set_text(progress->progress_bar, _("Starting ..."));
+	}
  }
 
  void pw_progress_set_text(PwProgress *progress, const char *text) {
-
+	gtk_progress_bar_set_text(progress->progress_bar, text);
  }
 
  void pw_progress_set_pulse(PwProgress *progress, gboolean pulse) {
@@ -217,6 +288,14 @@
 	progress->step = current;
 	progress->steps = total;
 	progress->idle = 0;	
+
+	if(total > 1) {
+		g_autofree gchar *text = g_strdup_printf(_("%u of %u"), current, total);
+		gtk_label_set_text(progress->labels[LABEL_LEFT], text);
+	} else {
+		gtk_label_set_text(progress->labels[LABEL_LEFT], "");
+	}
+	
  }
 
  void pw_progress_set_steps(PwProgress *progress, unsigned int steps) {
@@ -226,8 +305,12 @@
 	progress->current = 0;
 	progress->total = 0;
 
-	g_autofree gchar *text = g_strdup_printf(_("%u of %u"), progress->step, progress->steps);
-	gtk_label_set_text(progress->labels[LABEL_LEFT], text);
+	if(steps > 1) {
+		g_autofree gchar *text = g_strdup_printf(_("%u of %u"), progress->step, progress->steps);
+		gtk_label_set_text(progress->labels[LABEL_LEFT], text);
+	} else {
+		gtk_label_set_text(progress->labels[LABEL_LEFT], "");
+	}
 
 }
 
@@ -237,7 +320,14 @@
 	progress->current = 0;
 	progress->total = 0;
 
-	g_autofree gchar *text = g_strdup_printf(_("%u of %u"), progress->step, progress->steps);
-	gtk_label_set_text(progress->labels[LABEL_LEFT], text);
+	gtk_progress_bar_set_text(progress->progress_bar, _("Please wait ..."));
+
+	if(progress->current <= progress->total && progress->steps > 1) {
+		g_autofree gchar *text = g_strdup_printf(_("%u of %u"), progress->step, progress->steps);
+		gtk_label_set_text(progress->labels[LABEL_LEFT], text);
+	} else {
+		gtk_label_set_text(progress->labels[LABEL_LEFT], "");
+	}
 
 }
+
