@@ -66,8 +66,9 @@ configure_file(output :
 
 includes_dir = include_directories('../src/include')
 
+gtk4 = dependency('gtk4', version : '>= 4.10')
 dependencies = [
-	dependency('gtk4'),
+	gtk4,
 ]
 
 sources = [
@@ -90,7 +91,6 @@ if host_machine.system() == 'windows'
     meson.project_name(), 
     sources,
     install: true,
-    gnu_symbol_visibility: 'hidden',
     dependencies: dependencies,
     include_directories: includes_dir,
   )
@@ -116,7 +116,6 @@ elif host_machine.system() == 'darwin'
     install: true,
     version : libversion,
     soversion : libversion,
-    gnu_symbol_visibility: 'hidden',
     dependencies: dependencies,
     include_directories: includes_dir
   )
@@ -143,7 +142,6 @@ else
     version : libversion,
     soversion : libversion,
     c_args: [ '-ffat-lto-objects' ],
-    gnu_symbol_visibility: 'hidden',
 	dependencies: dependencies,
     include_directories: includes_dir
   )
@@ -167,11 +165,11 @@ dynamic_library = declare_dependency(
   include_directories : includes_dir,
 ) 
 
-#executable(
-#  meson.project_name(),
-#  config_src + [ 'src/testprogram/testprogram.c' ],
-#  install: false,
-#  link_with : [ dynamic ],
-#  dependencies: deps,
-#  include_directories: includes_dir
-#)
+executable(
+  meson.project_name(),
+   [ 'src/testprogram/testprogram.c' ],
+  install: false,
+  link_with : [ dynamic ],
+  dependencies: [ gtk4 ],
+  include_directories: includes_dir
+)

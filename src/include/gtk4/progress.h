@@ -28,7 +28,7 @@
  #define PW_TYPE_PROGRESS pw_progress_get_type()
  G_DECLARE_FINAL_TYPE (PwProgress, pw_progress, PW, PROGRESS, GtkGrid)
 
- PwProgress * pw_progress_new(void);
+ PwProgress * pw_progress_new();
 
  void pw_progress_set_progress(PwProgress *progress, uint64_t current, uint64_t total);
  void pw_progress_set_text(PwProgress *progress, const char *text);
