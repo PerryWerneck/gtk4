@@ -29,7 +29,8 @@
  static void pw_progress_get_property(GObject *object, guint prop_id, GValue *value, GParamSpec *pspec);
 
  enum {
-	PROP_TEXT = 1,
+	PROP_0,
+	PROP_TEXT,
 	PROP_LENGTH_CURRENT,
 	PROP_LENGTH_TOTAL,
 	PROP_STEP_CURRENT,
@@ -42,7 +43,7 @@
 	LABEL_RIGHT,
  };
 
- static GParamSpec *obj_properties[N_PROPERTIES] = { NULL, };
+ // static GParamSpec *obj_properties[N_PROPERTIES] = { NULL, };
 
  struct _PwProgressClass {
 	GtkGridClass parent_class;
@@ -72,65 +73,76 @@
 
 	object_class->dispose = pw_progress_dispose;
 
-	/*
   	object_class->set_property = pw_progress_set_property;
   	object_class->get_property = pw_progress_get_property;
 
-	obj_properties[PROP_TEXT] =
+	g_object_class_install_property(
+		object_class,
+		PROP_TEXT,
     	g_param_spec_string (
 			"text",
 			"Text",
 			"The text for progress bar, usually the URL of the download.",
 			"",  // default value
 			G_PARAM_READWRITE
-		);
-
-  	obj_properties[PROP_LENGTH_CURRENT] =
-		g_param_spec_uint ("current-length",
-						"Current length",
-						"The position for the progress operation.",
-						0,  			// minimum value 
-						G_MAXUINT,	// maximum value
-						0, 			// default value
-						G_PARAM_READWRITE
-		);
-
-	obj_properties[PROP_LENGTH_TOTAL] =
-		g_param_spec_uint ("total-length",
-							"Total length",
-							"The length of the progress operation.",
-							0,  			// minimum value 
-							G_MAXUINT,	// maximum value
-							0, 			// default value
-							G_PARAM_READWRITE
-		);
-
-	obj_properties[PROP_STEP_CURRENT] =
-		g_param_spec_uint ("step",
-							"Current step",
-							"The current step of the operation.",
-							0,  			// minimum value 
-							G_MAXUINT,	// maximum value
-							0, 			// default value
-							G_PARAM_READWRITE
-		);
-
-	obj_properties[PROP_LENGTH_TOTAL] =
-		g_param_spec_uint ("steps",
-							"Steps",
-							"The number of steps for this operation.",
-							0,  			// minimum value 
-							G_MAXUINT,	// maximum value
-							0, 			// default value
-							G_PARAM_READWRITE
-		);
-
-	g_object_class_install_properties(
-		object_class,
-		N_PROPERTIES,
-		obj_properties
+		)
 	);
-	*/
+
+  	g_object_class_install_property(
+		object_class,
+		PROP_LENGTH_CURRENT,
+		g_param_spec_uint (
+			"current-length",
+			"Current length",
+			"The position for the progress operation.",
+			0,  			// minimum value 
+			G_MAXUINT,	// maximum value
+			0, 			// default value
+			G_PARAM_READWRITE
+		)
+	);
+
+	g_object_class_install_property(
+		object_class,
+		PROP_LENGTH_TOTAL,
+		g_param_spec_uint (
+			"total-length",
+			"Total length",
+			"The length of the progress operation.",
+			0,  			// minimum value 
+			G_MAXUINT,	// maximum value
+			0, 			// default value
+			G_PARAM_READWRITE
+		)
+	);
+
+	g_object_class_install_property(
+		object_class,
+		PROP_STEP_CURRENT,
+		g_param_spec_uint (
+			"step",
+			"Current step",
+			"The current step of the operation.",
+			0,  		// minimum value 
+			G_MAXUINT,	// maximum value
+			0, 			// default value
+			G_PARAM_READWRITE
+		)
+	);
+
+	g_object_class_install_property(
+		object_class,
+		PROP_LENGTH_TOTAL,
+		g_param_spec_uint (
+			"steps",
+			"Steps",
+			"The number of steps for this operation.",
+			0,  			// minimum value 
+			G_MAXUINT,	// maximum value
+			0, 			// default value
+			G_PARAM_READWRITE
+		)
+	);
 
  }
 
@@ -192,10 +204,9 @@
 		gtk_widget_set_vexpand(GTK_WIDGET(self->labels[label]), FALSE);
 		gtk_widget_set_valign(GTK_WIDGET(self->labels[label]), GTK_ALIGN_END);
 		gtk_widget_set_visible(GTK_WIDGET(self->labels[label]),TRUE);
-		GtkStyleContext *style = gtk_widget_get_style_context(GTK_WIDGET(self->labels[label]));
-		gtk_style_context_add_class(style, "dim-label");
-		gtk_style_context_add_class(style, "caption");
-		gtk_style_context_add_class(style, "pw-progress-label");
+		gtk_widget_add_css_class(GTK_WIDGET(self->labels[label]), "dim-label");
+		gtk_widget_add_css_class(GTK_WIDGET(self->labels[label]), "caption");
+		gtk_widget_add_css_class(GTK_WIDGET(self->labels[label]), "pw-progress-label");
 	}
 
 	gtk_widget_set_halign(GTK_WIDGET(self->labels[LABEL_LEFT]), GTK_ALIGN_START);
@@ -223,11 +234,7 @@
 	gtk_widget_set_valign(GTK_WIDGET(self->progress_bar), GTK_ALIGN_START);
 	gtk_grid_attach(GTK_GRID(self), GTK_WIDGET(self->progress_bar), 0, 0, 3, 1);
 	gtk_widget_set_visible(GTK_WIDGET(self->progress_bar),TRUE);
-
-	{
-		GtkStyleContext *style = gtk_widget_get_style_context(GTK_WIDGET(self->progress_bar));
-		gtk_style_context_add_class(style, "pw-progress-bar");
-	}
+	gtk_widget_add_css_class(GTK_WIDGET(self->progress_bar),"pw-progress-bar");
 
 	self->timesource = g_timeout_add(100, (GSourceFunc) check_for_pulse, self);
  }
