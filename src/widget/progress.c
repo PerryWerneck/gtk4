@@ -43,11 +43,8 @@
 	LABEL_RIGHT,
  };
 
- // static GParamSpec *obj_properties[N_PROPERTIES] = { NULL, };
-
  struct _PwProgressClass {
 	GtkGridClass parent_class;
-
  };
 
  struct _PwProgress {
@@ -188,7 +185,6 @@
 		self->idle++;
 
 	}
-
 
 	return TRUE;
 
