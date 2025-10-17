@@ -163,16 +163,20 @@
 		g_autofree gchar *total_str = size_to_string(self->total);
 		g_autofree gchar *text = g_strdup_printf(_("%s of %s"), current_str, total_str);
 		gtk_label_set_text(self->labels[LABEL_RIGHT], text);
+
+		self->idle++;
 	
-	} else if (self->idle > 1) {
+	} else if (self->idle >= 100) {
 
 		// No value change for a while, pulse the progress bar
 		gtk_progress_bar_pulse(self->progress_bar);
-		self->idle = 1;	// keep pulsing
+
+	} else {
+
+		self->idle++;
 
 	}
 
-	self->idle++;
 
 	return TRUE;
 
@@ -188,10 +192,19 @@
 		gtk_widget_set_vexpand(GTK_WIDGET(self->labels[label]), FALSE);
 		gtk_widget_set_valign(GTK_WIDGET(self->labels[label]), GTK_ALIGN_END);
 		gtk_widget_set_visible(GTK_WIDGET(self->labels[label]),TRUE);
+		GtkStyleContext *style = gtk_widget_get_style_context(GTK_WIDGET(self->labels[label]));
+		gtk_style_context_add_class(style, "dim-label");
+		gtk_style_context_add_class(style, "caption");
+		gtk_style_context_add_class(style, "pw-progress-label");
 	}
 
 	gtk_widget_set_halign(GTK_WIDGET(self->labels[LABEL_LEFT]), GTK_ALIGN_START);
 	gtk_widget_set_halign(GTK_WIDGET(self->labels[LABEL_RIGHT]), GTK_ALIGN_END);
+
+#ifdef DEBUG
+	gtk_label_set_text(self->labels[LABEL_LEFT], "Left Label");
+	gtk_label_set_text(self->labels[LABEL_RIGHT], "Right Label");
+#endif
 
 	gtk_grid_attach(GTK_GRID(self), GTK_WIDGET(self->labels[LABEL_LEFT]), 0, 1, 1, 1);
 	gtk_grid_attach(GTK_GRID(self), GTK_WIDGET(self->labels[LABEL_RIGHT]), 2, 1, 1, 1);
@@ -210,6 +223,11 @@
 	gtk_widget_set_valign(GTK_WIDGET(self->progress_bar), GTK_ALIGN_START);
 	gtk_grid_attach(GTK_GRID(self), GTK_WIDGET(self->progress_bar), 0, 0, 3, 1);
 	gtk_widget_set_visible(GTK_WIDGET(self->progress_bar),TRUE);
+
+	{
+		GtkStyleContext *style = gtk_widget_get_style_context(GTK_WIDGET(self->progress_bar));
+		gtk_style_context_add_class(style, "pw-progress-bar");
+	}
 
 	self->timesource = g_timeout_add(100, (GSourceFunc) check_for_pulse, self);
  }
@@ -306,7 +324,7 @@
  }
 
  void pw_progress_set_pulse(PwProgress *progress, gboolean pulse) {
-	progress->idle = pulse ? 1000 : 0;
+	progress->idle = pulse ? 1000 : 1;
  }
 
  void pw_progress_set_step(PwProgress *progress, unsigned int current, unsigned int total) {
