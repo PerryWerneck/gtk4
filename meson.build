@@ -1,7 +1,7 @@
 project(
 	'pwgtk', 
 	['c'],
-	version: '0.0.1',
+	version: '1.0.0',
 	default_options : ['c_std=c11'],
 	license: 'GPL-3.0-or-later',
 )
