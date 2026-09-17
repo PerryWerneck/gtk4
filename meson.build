@@ -1,8 +1,8 @@
 project(
 	'pwgtk', 
-	['c'],
+	['c','cpp'],
 	version: '1.0.0',
-	default_options : ['c_std=c11'],
+	default_options : ['c_std=c11', 'cpp_std=c++17'],
 	license: 'GPL-3.0-or-later',
 )
 
@@ -24,7 +24,7 @@ subdir('po')
 #
 # Compilers
 #
-#cxx = meson.get_compiler('cpp')
+cxx = meson.get_compiler('cpp')
 cc = meson.get_compiler('c')
 enable_debug = get_option('debug') or get_option('buildtype').contains('debug')
 
@@ -44,7 +44,9 @@ else
 endif
 
 global_cflags = cc.get_supported_arguments(compiler_flags_common)
+global_cxxflags = cxx.get_supported_arguments(compiler_flags_common)
 
+add_project_arguments(global_cxxflags, language: 'cpp')
 add_project_arguments(global_cflags, language: 'c')
 
 #
@@ -64,7 +66,7 @@ configure_file(output :
 	configuration : conf_data
 )
 
-includes_dir = include_directories('../src/include')
+includes_dir = include_directories('src/include')
 
 gtk4 = dependency('gtk4', version : '>= 4.10')
 dependencies = [
